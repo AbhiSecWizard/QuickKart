@@ -6,19 +6,16 @@ import { ProductCard } from "../component/ProductCard";
 import { Pagination } from "../component/Pagination";
 import MobileFilter from "../component/MobileFilter.jsx"
 const Products = () => {
-  const { data, fetchApiProducts } = GetData();
-
-  const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("All");
-  const [brand, setBrand] = useState("All");
-  const [priceRange, setPriceRange] = useState([0, 5000]);
-  const [page, setPage] = useState(1);
-  const [openFilter,setOpenFilter] = useState(false)
-
+  const {data,fetchApiProducts} = GetData();
+  const [search,setSearch] = useState("");
+  const [category,setCategory] = useState("All");
+  const [brand,setBrand] = useState("All");
+  const [priceRange,setPriceRange]= useState([0, 5000]);
+  const [page, setPage]= useState(1);
+  const [openFilter,setOpenFilter]= useState(false)
   useEffect(() => {
     fetchApiProducts();
   }, []);
-
   const filteredData = data?.filter(
     (item) =>
       item.title.toLowerCase().includes(search.toLowerCase()) &&
@@ -31,7 +28,7 @@ const Products = () => {
   const totalPages = Math.ceil(filteredData?.length / 8);
 
   return (
-    <div className="w-full">
+    <div className="w-full bg-gray-100">
       <MobileFilter  search={search}
             setSearch={setSearch}
             category={category}
@@ -53,6 +50,7 @@ const Products = () => {
             setBrand={setBrand}
             priceRange={priceRange}
             setPriceRange={setPriceRange}
+            
           />
 
           {/* PRODUCT GRID */}

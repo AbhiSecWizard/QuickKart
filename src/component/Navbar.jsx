@@ -12,52 +12,79 @@ import {
 } from "@clerk/clerk-react";
 import { useCart } from "../context/CartContext";
 import { useState } from "react";
-import { ResponsiveNavManu } from "./ResponsiveNavManu";
+import ResponsiveNavMenu from "./ResponsiveNavManu";
 
-const Navbar = ({ location }) => {
-  const { cartItem } = useCart();
+const Navbar = () => {
+  const { cartTotalItems } = useCart();
+
+  // 🔹 STATES
   const [openNav, setOpenNav] = useState(false);
   const [openDropdown, setOpenDropdown] = useState(false);
+  const [userLocation, setUserLocation] = useState(null);
+
+  // 🔹 LOCATION HANDLER
+  const handleUseCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+
+        // Temporary label (later API se city nikal sakte ho)
+        setUserLocation({
+          suburb: "Current Location",
+          lat: latitude,
+          lng: longitude,
+        });
+
+        setOpenDropdown(false);
+      },
+      () => alert("Please allow location access")
+    );
+  };
 
   return (
     <header className="bg-white shadow-md relative">
       <div className="max-w-6xl mx-auto flex items-center justify-between px-4 py-3">
 
         {/* LOGO */}
-        <Link to="/" className="text-3xl font-bold transition-transform duration-300 hover:scale-105">
+        <Link
+          to="/"
+          className="text-xl md:text-3xl font-bold hover:scale-105 transition"
+        >
           <span className="text-red-500 font-serif">Quick</span>Kart
         </Link>
 
-        {/* LOCATION */}
+        {/* LOCATION (DESKTOP) */}
         <div
           onClick={() => setOpenDropdown(!openDropdown)}
-          className="hidden md:flex items-center gap-1 cursor-pointer transition-all duration-300 hover:text-red-500"
+          className="hidden md:flex items-center gap-1 cursor-pointer hover:text-red-500 transition"
         >
-          <CiLocationOn size={24} />
-          <span className="font-semibold text-sm">
-            {location?.city || "Add Address"}
+          <CiLocationOn size={22} />
+          <span className="text-sm font-semibold">
+            {userLocation?.suburb || "Add Address"}
           </span>
-
           <RiArrowDropDownLine
-            size={24}
-            className={`transition-transform duration-300 ${
-              openDropdown ? "rotate-180" : "rotate-0"
+            size={22}
+            className={`transition-transform ${
+              openDropdown ? "rotate-180" : ""
             }`}
           />
         </div>
 
         {/* DESKTOP MENU */}
-        <nav className="hidden md:flex items-center gap-7 font-bold uppercase">
+        <nav className="hidden md:flex items-center gap-7 font-semibold uppercase">
           {["/", "/products", "/about", "/contact"].map((path) => (
             <NavLink
               key={path}
               to={path}
               className={({ isActive }) =>
-                `transition-all duration-300 ${
-                  isActive
-                    ? "border-b-2 border-red-500"
-                    : "hover:text-red-500"
-                }`
+                isActive
+                  ? "border-b-2 border-red-500"
+                  : "hover:text-red-500 transition"
               }
             >
               {path === "/" ? "Home" : path.slice(1)}
@@ -65,16 +92,20 @@ const Navbar = ({ location }) => {
           ))}
 
           {/* CART */}
-          <Link to="/cart" className="relative group">
-            <FaCartPlus size={24} className="transition-transform duration-300 group-hover:scale-110" />
-            <span className="absolute -top-2 -right-2 bg-amber-500 text-xs px-2 rounded-full transition-transform duration-300 group-hover:scale-110">
-              {cartItem.length}
+          <Link to="/cart" className="relative">
+            <FaCartPlus size={22} />
+            <span className="absolute -top-2 -right-2 bg-amber-500 text-xs px-2 rounded-full">
+              {cartTotalItems}
             </span>
           </Link>
 
           {/* AUTH */}
           <SignedOut>
-            <SignInButton className="bg-blue-500 px-4 py-2 rounded-lg text-white transition-all duration-300 hover:bg-blue-600 hover:scale-105" />
+            <SignInButton>
+              <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                Sign In
+              </button>
+            </SignInButton>
           </SignedOut>
           <SignedIn>
             <UserButton />
@@ -82,48 +113,55 @@ const Navbar = ({ location }) => {
         </nav>
 
         {/* MOBILE CART */}
-        <Link to="/cart" className="relative left-10 md:hidden">
-          <FaCartPlus size={24} />
+        <Link to="/cart" className="relative md:hidden left-8">
+          <FaCartPlus size={22} />
           <span className="absolute -top-2 -right-2 bg-amber-500 text-xs px-2 rounded-full">
-            {cartItem.length}
+            {cartTotalItems}
           </span>
         </Link>
 
         {/* MOBILE TOGGLE */}
         <button
-          className="md:hidden transition-transform duration-300"
           onClick={() => setOpenNav(!openNav)}
+          className="md:hidden transition"
         >
-          <div
-            className={`transition-all duration-300 transform ${
-              openNav ? "rotate-180 scale-110" : "rotate-0 scale-100"
-            }`}
-          >
-            {openNav ?  <RxCross1 size={28} /> :  <RxHamburgerMenu size={28} /> }
-          </div>
+          {openNav ? <RxCross1 size={26} /> : <RxHamburgerMenu size={26} />}
         </button>
       </div>
 
       {/* LOCATION DROPDOWN */}
       <div
-        className={`hidden md:block absolute top-16 left-1/2 -translate-x-1/2 bg-gray-100 p-4 rounded-lg shadow-lg
-        transition-all duration-300 origin-top
-        ${openDropdown ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"}`}
+        className={`absolute top-16 left-1/2 -translate-x-1/2 bg-gray-100 p-4 rounded-xl shadow-lg
+        transition-all origin-top
+        ${
+          openDropdown
+            ? "opacity-100 scale-100"
+            : "opacity-0 scale-95 pointer-events-none"
+        }`}
       >
-        <div className="flex justify-between items-center mb-2">
-          <span className="font-bold uppercase text-sm">Change Location</span>
+        <div className="flex justify-between items-center mb-3">
+          <span className="font-bold text-sm uppercase">Change Location</span>
           <IoClose
-            onClick={() => setOpenDropdown(false)}
             className="cursor-pointer"
+            onClick={() => setOpenDropdown(false)}
           />
         </div>
-        <button className="bg-blue-500 px-4 py-2 rounded text-white w-full transition hover:bg-blue-600">
+
+        <button
+          onClick={handleUseCurrentLocation}
+          className="bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg w-full transition"
+        >
           Use Current Location
         </button>
       </div>
 
       {/* MOBILE MENU */}
-      <ResponsiveNavManu openNav={openNav} setOpenNav={setOpenNav} />
+      <ResponsiveNavMenu
+        openNav={openNav}
+        setOpenNav={setOpenNav}
+        location={userLocation}
+        onUseLocation={handleUseCurrentLocation}
+      />
     </header>
   );
 };

@@ -5,14 +5,15 @@ import { Category } from "./Category";
 import "swiper/css";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
-
+import { useNavigate, useParams } from "react-router-dom";
 const Carousal = () => {
   const { data, fetchApiProducts } = GetData();
-
+  const navigate = useNavigate()
+  
   useEffect(() => {
     fetchApiProducts();
   }, []);
-
+  
   return (
     <div className="md:-my-3">
       <Swiper
@@ -26,8 +27,8 @@ const Carousal = () => {
           <SwiperSlide key={index}>
             <div className="w-full bg-linear-to-r from-purple-500 via-pink-500 to-red-500 py-10 md:py-14">
               <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center gap-10 px-6">
-
-                {/* TEXT SECTION */}
+                
+                
                 <div className="w-full md:w-1/2 text-white text-center md:text-right">
                   <span className="uppercase tracking-widest text-xs md:text-sm text-gray-300">
                     Trusted Shopping Platform
@@ -47,10 +48,10 @@ const Carousal = () => {
                   </p>
 
                   <div className="mt-6 flex justify-center md:justify-end gap-4">
-                    <button className="bg-yellow-400 text-black px-6 py-2 rounded-full font-semibold hover:bg-yellow-300 transition">
+                    <button className="bg-yellow-400 text-black px-6 py-2 rounded-full font-semibold hover:bg-yellow-300 transition" onClick={() => navigate("/products")}>
                       Buy Now
                     </button>
-                    <button className="border border-white px-6 py-2 rounded-full hover:bg-white hover:text-black transition">
+                    <button className="border border-white px-6 py-2 rounded-full hover:bg-white hover:text-black transition" onClick={()=>navigate(`/products/${item.id}`)} >
                       View Details
                     </button>
                   </div>

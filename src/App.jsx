@@ -25,10 +25,11 @@ const getLocation = async ()=>{
     try{
       const location = await axios.get(url)
       const exactLocation = location.data.address
+      console.log(exactLocation)
       setLocation(exactLocation)
       setOpenDropdown(false)
       
-      // console.log("location",exactLocation)
+
     }
     catch(error){
       console.log("error fetching location",error)
@@ -36,9 +37,6 @@ const getLocation = async ()=>{
   })
 }
 const {cartItem,setCartItem} = useCart()
-
-
-
 useEffect(()=>{
   getLocation()
 },[])
@@ -49,14 +47,10 @@ useEffect(()=>{
     setCartItem(JSON.parse(storedItem))
   }
 },[])
-
 // set item from storage
 useEffect(()=>{
   localStorage.setItem("cartItem",JSON.stringify(cartItem))
 },[cartItem])
-
-
-
   return (
   <BrowserRouter>
   <Navbar location={location} getLocation={getLocation} openDropdown={openDropdown} setOpenDropdown={setOpenDropdown}/>
@@ -73,5 +67,4 @@ useEffect(()=>{
   </BrowserRouter>
   )
 }
-
 export default App

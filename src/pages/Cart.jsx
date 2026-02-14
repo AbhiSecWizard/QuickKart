@@ -1,4 +1,3 @@
-import React from "react";
 import { useCart } from "../context/CartContext";
 import emptyCartVedio from "../assets/empty.mp4";
 import { useNavigate } from "react-router-dom";
@@ -7,19 +6,128 @@ import { LuNotebook } from "react-icons/lu";
 import { MdOutlineDeliveryDining } from "react-icons/md";
 import { FaBagShopping } from "react-icons/fa6";
 import { useUser } from "@clerk/clerk-react";
+import jsPDF from "jspdf";
 
+  
 const Cart = ({ location }) => {
+  const toDataURL = (url) =>
+  fetch(url)
+    .then((response) => response.blob())
+    .then(
+      (blob) =>
+        new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        })
+    );
+
   const navigate = useNavigate();
-  const { cartItem, updateQuantity, deleteItem } = useCart();
+  const { cartItem, cartItemTotalAmntCalc, updateQuantity, deleteItem } =
+  useCart();
+  function handleInput(e){
+    if(Number(e) && e.length==10){
+     return e.cuurent.value
+    }
+  }
   const { user } = useUser();
+const handleCheckout = async () => {
+  const doc = new jsPDF();
+
+  // 🔹 HEADER
+  doc.setFontSize(22);
+  doc.text("INVOICE", 105, 20, { align: "center" });
+
+  doc.setFontSize(10);
+  doc.text("Thank you for shopping with us", 105, 27, {
+    align: "center",
+  });
+
+  // 🔹 LINE
+  doc.line(20, 32, 190, 32);
+
+  // 🔹 USER DETAILS
+  doc.setFontSize(12);
+  doc.text(`Name: ${user?.fullName}`, 20, 45);
+
+  doc.text(
+    `Address: ${location?.suburb || ""}, ${location?.city || ""}, ${
+      location?.country || ""
+    }
+    `,
+    20,
+    61
+  );
+
+  // 🔹 TABLE HEADER
+  let y = 80;
+  doc.setFontSize(12);
+  doc.text("Item", 20, y);
+  doc.text("Qty", 120, y);
+  doc.text("Price", 150, y);
+
+  doc.line(20, y + 2, 190, y + 2);
+
+  // 🔹 CART ITEMS (with Image)
+  y += 10;
+
+  for (let i = 0; i < cartItem.length; i++) {
+    const item = cartItem[i];
+
+    // Convert image to base64
+    const imgBase64 = await toDataURL(item.images?.[0]);
+
+    // Add image to PDF
+    doc.addImage(imgBase64, "JPEG", 20, y - 5, 20, 20);
+
+    doc.text(`${i + 1}. ${item.title}`, 45, y);
+    doc.text(`${item.quantity}`, 125, y);
+    doc.text(`$${(item.price * item.quantity).toFixed(2)}`, 150, y);
+
+    y += 25; // image height space
+  }
+
+  // 🔹 TOTAL SECTION
+  y += 5;
+  doc.line(20, y, 190, y);
+  y += 10;
+
+  doc.text(`Items Total:`, 120, y);
+  doc.text(`$${cartItemTotalAmntCalc.toFixed(2)}`, 150, y);
+
+  y += 8;
+  doc.text(`Handling:`, 120, y);
+  doc.text(`$5.00`, 150, y);
+
+  y += 10;
+  doc.setFontSize(14);
+  doc.text(`Grand Total:`, 120, y);
+  doc.text(
+    `$${(cartItemTotalAmntCalc + 5).toFixed(2)}`,
+    150,
+    y
+  );
+
+  // 🔹 FOOTER
+  y += 20;
+  doc.setFontSize(10);
+  doc.text(
+    "This is a system generated invoice.",
+    105,
+    y,
+    { align: "center" }
+  );
+
+  // 🔹 DOWNLOAD PDF
+  doc.save(`Invoice-${user?.fullName}.pdf`);
+};
 
   return (
     <div className="min-h-screen bg-gray-50 px-3 md:px-6 py-6">
       {cartItem.length > 0 ? (
         <>
-          <h1 className="text-2xl font-bold text-center mb-6">
-            My Cart ({cartItem.length})
-          </h1>
+          <h1 className="text-2xl font-bold text-center mb-6">Your Cart</h1>
 
           {/* CART ITEMS */}
           <div className="space-y-4 max-w-6xl mx-auto">
@@ -33,7 +141,7 @@ const Cart = ({ location }) => {
                   <img
                     src={item.images?.[0]}
                     alt={item.title}
-                    className="w-24 h-24 object-contain rounded"
+                    className="w-24 h-24 object-contain"
                   />
                   <div>
                     <p className="text-gray-600">{item.title}</p>
@@ -44,21 +152,19 @@ const Cart = ({ location }) => {
                 {/* QUANTITY */}
                 <div className="flex items-center gap-2 my-3 md:my-0">
                   <button
-                    onClick={() =>
-                      updateQuantity(cartItem, item.id, "decrease")
-                    }
-                    className="w-8 h-8 bg-blue-400 hover:bg-blue-600 text-white rounded"
+                    onClick={() => updateQuantity(item.id, "decrease")}
+                    className="cursor-pointer w-8 h-8 bg-blue-400 hover:bg-blue-600 text-white rounded"
                   >
                     −
                   </button>
+
                   <span className="w-8 h-8 flex items-center justify-center bg-blue-400 text-white rounded">
                     {item.quantity}
                   </span>
+
                   <button
-                    onClick={() =>
-                      updateQuantity(cartItem, item.id, "increase")
-                    }
-                    className="w-8 h-8 bg-blue-400 hover:bg-blue-600 text-white rounded"
+                    onClick={() => updateQuantity(item.id, "increase")}
+                    className="cursor-pointer w-8 h-8 bg-blue-400 hover:bg-blue-600 text-white rounded"
                   >
                     +
                   </button>
@@ -67,7 +173,7 @@ const Cart = ({ location }) => {
                 {/* DELETE */}
                 <button
                   onClick={() => deleteItem(item.id)}
-                  className="text-red-500 hover:text-red-700"
+                  className="cursor-pointer text-red-500 hover:text-red-700"
                 >
                   <RiDeleteBin6Line size={24} />
                 </button>
@@ -82,48 +188,43 @@ const Cart = ({ location }) => {
               <h2 className="text-xl font-semibold">Delivery Info</h2>
 
               <input
-                value={user?.fullName || ""}
+                value={user?.fullName || "Customer"}
                 placeholder="Full Name"
+
                 className="w-full p-3 border rounded outline-none"
               />
 
               <input
-                value={`${location?.road || ""}, ${location?.city || ""}`}
+                value={`${location?.suburb || "urbann area"}, ${location?.city || "delhi"}, ${location?.postcode || "Indea"}`}
                 placeholder="Address"
+     
                 className="w-full p-3 border rounded outline-none"
               />
 
               <div className="grid grid-cols-2 gap-3">
                 <input
-                  value={location?.city || ""}
-                  placeholder="State"
+                  value={location?.city || "Delhi"}
+                  placeholder="City"
                   className="p-3 border rounded outline-none"
+                  
                 />
                 <input
-                  value={location?.country || ""}
+                  value={location?.country || "India"}
                   placeholder="Country"
                   className="p-3 border rounded outline-none"
+                  
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <input
-                  value={location?.postcode || ""}
-                  placeholder="Pincode"
-                  className="p-3 border rounded outline-none"
-                />
-                <input
-                  placeholder="Phone Number"
-                  className="p-3 border rounded outline-none"
-                />
-              </div>
+              <input
+                placeholder="Phone Number"
+                type="tel"
+                onChange={(e)=>handleInput(e.target.value)}
+                className="w-full p-3 border rounded outline-none"
+              />
 
               <button className="w-full bg-blue-400 hover:bg-blue-600 text-white py-3 rounded">
                 Submit
-              </button>
-
-              <button className="w-full bg-blue-400 hover:bg-blue-600 text-white py-3 rounded">
-                Detect Location
               </button>
             </div>
 
@@ -135,14 +236,14 @@ const Cart = ({ location }) => {
                 <span className="flex items-center gap-2 text-gray-600">
                   <LuNotebook /> Items Total
                 </span>
-                <span>$1234</span>
+                <span>${cartItemTotalAmntCalc.toFixed(2)}</span>
               </div>
 
               <div className="flex justify-between">
                 <span className="flex items-center gap-2 text-gray-600">
                   <MdOutlineDeliveryDining /> Delivery
                 </span>
-                <span className="text-red-500">FREE</span>
+                <span className="text-green-500">FREE</span>
               </div>
 
               <div className="flex justify-between">
@@ -151,25 +252,12 @@ const Cart = ({ location }) => {
                 </span>
                 <span>$5</span>
               </div>
-
               <hr />
-
               <div className="flex justify-between font-bold text-lg">
                 <span>Grand Total</span>
-                <span>$1967</span>
+                <span>${(cartItemTotalAmntCalc + 5).toFixed(2)}</span>
               </div>
-
-              <div className="flex gap-2">
-                <input
-                  placeholder="Promo Code"
-                  className="w-full p-2 border rounded outline-none"
-                />
-                <button className="bg-blue-400 hover:bg-blue-600 text-white px-4 rounded">
-                  Apply
-                </button>
-              </div>
-
-              <button className="w-full bg-blue-400 hover:bg-blue-600 text-white py-3 rounded">
+              <button className="w-full bg-blue-400 hover:bg-blue-600 text-white py-3 rounded" onClick={handleCheckout}>
                 Proceed to Checkout
               </button>
             </div>

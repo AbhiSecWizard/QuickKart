@@ -1,90 +1,93 @@
 import { GetData } from "../context/DataContext";
 export const FilterSection = ({
-  handleBrandChange,
-  handleCategoryChange,
   search,
   setSearch,
   priceRange,
   setPriceRange,
-  setBrand,
   category,
   setCategory,
+  brand,
+  setBrand,
 }) => {
   const { getUniqueCategory, getUniqueBrands } = GetData();
 
-  // console.log(search);
-  // console.log("this is range", priceRange);
+  const handleCategoryChange = (item) => {
+    setCategory(item);
+  };
+
+  const handleBrandChange = (e) => {
+    setBrand(e.target.value);
+  };
+
   return (
-    <div className="bg-gray-200 p-4 rounded-md h-max hidden">
+    <div className="bg-gray-200 p-4 rounded-md h-max hidden md:block">
+      {/* SEARCH */}
       <input
         type="text"
-        placeholder="Search...."
+        placeholder="Search..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        className="bg-white p-2 rounded-md border-gray-400 border-2"
-      />
-      {/* category only data */}
-      <div className="font-bold text-sm text-gray-500">
-        <h1>Category</h1>
-        {getUniqueCategory?.map((item, index) => {
-          return (
-            <div key={index} className="flex gap-1">
-              <input
-                type="checkbox"
-                name={item}
-                checked={category == item}
-                value={item}
-                onChange={handleCategoryChange}
-              />
-              <button className="uppercase cursor-pointer">{item}</button>
-            </div>
-          );
-        })}
-        <h1>Brand</h1>
-        <select
-          className="w-full h-8 text-center font-bold uppercase"
-          onChange={handleBrandChange}
-        >
-          {getUniqueBrands
-            ?.filter(
-              (item) => item !== undefined && item !== null && item !== ""
-            )
-            .map((item, index) => (
-              <option key={index} value={item} className="">
-                {item}
-              </option>
-            ))}
-        </select>
-        <div className="mt-5">
-          <h1> Price Range</h1>
-          <div className="mt-5">
-            <label htmlFor="">
-              Price Range : ${priceRange[0]}- ${priceRange[1]}
-            </label>
-            <input
-              type="range"
-              name=""
-              id=""
-              value={priceRange[1]}
-              className="w-full"
-              onChange={(e) =>
-                setPriceRange([priceRange[0], Number(e.target.value)])
-              }
-            />
-          </div>
-          <button
-            onClick={() => {
-              setSearch("");
-              setCategory("All");
-              setBrand("All");
-              setPriceRange([0, 5000]);
-            }}
-            className="mt-3 bg-blue-500  hover:bg-blue-600  font-bold text-lg text-center px-4 py-1.5 text-white cursor-pointer rounded-sm"
-          >
-            Reset Filter
-          </button>
+        className="bg-white p-2 rounded-md border-gray-400 border-2 w-full"
+      />            
+      {/* CATEGORY */}
+      <h1 className="mt-4 font-bold">Category</h1>
+      {getUniqueCategory?.map((item, index) => (
+        <div key={index} className="flex gap-2 items-center">
+          <input
+            type="radio"
+            checked={category === item}
+            onChange={() => handleCategoryChange(item)}
+          />
+          <span className="uppercase">{item}</span>
         </div>
+      ))}
+
+      {/* BRAND */}
+      <h1 className="mt-4 font-bold">Brand</h1>
+      <select
+        value={brand}
+        onChange={handleBrandChange}
+        className="w-full h-8 text-center font-bold uppercase"
+      >
+        <option value="All">All</option>
+        {getUniqueBrands
+          ?.filter(Boolean)
+          .map((item, index) => (
+            <option key={index} value={item}>
+              {item}
+            </option>
+          ))}
+      </select>
+
+      {/* PRICE */}
+      <div className="mt-4">
+        <label>
+          Price: ${priceRange[0]} - ${priceRange[1]}
+        </label>
+        <input
+          type="range"
+          value={priceRange[1]}
+          min="0"
+          max="5000"
+          onChange={(e) =>
+            setPriceRange([priceRange[0], Number(e.target.value)])
+          }
+          className="w-full"
+        />
       </div>
+
+      {/* RESET */}
+      <button
+        onClick={() => {
+          setSearch("");
+          setCategory("All");
+          setBrand("All");
+          setPriceRange([0, 5000]);
+        }}
+        className="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-1 rounded"
+      >
+        Reset Filter
+      </button>
     </div>
   );
 };

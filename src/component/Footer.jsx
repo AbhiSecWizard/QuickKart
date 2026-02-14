@@ -34,7 +34,7 @@ export const Footer = () => {
                 </div>
             </div>
             <div className="text-center text-sm mt-8">
-                &copy; {new Date().getFullYear()} <span className="text-red-500">Zaptro</span>. All rights reserved.
+                &copy; {new Date().getFullYear()} <span className="text-red-500">QuickCart</span>. All rights reserved.
             </div>
         </div>
     </div>    

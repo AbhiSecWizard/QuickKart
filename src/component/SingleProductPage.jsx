@@ -142,18 +142,8 @@ export const SingleProductPage = () => {
           </div>
 
           {/* Quantity */}
-          <div className="mt-4 flex items-center gap-4">
-            <label className="font-medium text-gray-700">
-              Quantity:
-            </label>
-            <input
-              type="number"
-              min={1}
-              max={stock}
-              className="w-20 border border-gray-300 rounded-lg px-3 py-1
-                         focus:outline-none focus:ring-2 focus:ring-red-500"
-            />
-          </div>
+        
+          
 
           {/* Tags */}
           <div className="mt-4 flex gap-2 flex-wrap">
@@ -171,9 +161,6 @@ export const SingleProductPage = () => {
           <div className="mt-6 flex gap-4">
             <button className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 cursor-pointer" onClick={()=>addToCart(singleProduct)}>
               Add to Cart
-            </button>
-            <button className="px-6 py-2 border rounded-lg hover:bg-gray-100">
-              Buy Now
             </button>
           </div>
         </div>

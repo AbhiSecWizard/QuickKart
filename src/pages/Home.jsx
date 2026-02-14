@@ -5,7 +5,7 @@ import {Features} from '../component/Features'
 
 const Home = () => {
   return (
-    <div>
+    <div className="">
         <Carousal />  
         <MidBanner/>
         <Features/>
